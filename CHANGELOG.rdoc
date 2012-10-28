@@ -4,3 +4,10 @@
 
   * Birthday!
 
+=== 1.0.1 / 2012-10-28
+
+* 3 minor fixes/enhancements
+
+  * Works with Ruby 1.9.2 for us regular folks
+  * Sphero.start method to endlessly retry when connecting
+  * I think heading might work again, not too sure

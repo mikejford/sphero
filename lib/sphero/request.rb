@@ -89,6 +89,18 @@ class Sphero
       end
     end
 
+    class Heading < Request
+      def initialize seq, heading
+        super(seq, [heading])
+        @cid = 0x01
+      end
+
+      private
+      def packet_body
+        @data.pack 'n'
+      end
+    end
+
     class Sleep < Request
       def initialize seq, wakeup, macro
         super(seq, [wakeup, macro])

@@ -4,7 +4,15 @@ require 'sphero/response'
 require 'thread'
 
 class Sphero
-  VERSION = '1.0.0'
+  VERSION = '1.0.1'
+
+  class << self
+    def start(dev)
+      self.new dev
+    rescue Errno::EBUSY
+      retry
+    end
+  end
 
   def initialize dev
     @sp   = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
@@ -54,11 +62,6 @@ class Sphero
   end
 
   def heading= h
-    p :heading => h
-    heading = Request::Heading.new(@seq, h)
-    p Request::Heading
-    p heading
-    p heading.packet_body
     write Request::Heading.new(@seq, h)
   end
 
