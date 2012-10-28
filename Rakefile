@@ -16,7 +16,7 @@ Hoe.spec 'sphero' do
   self.extra_deps << ['serialport']
 
   self.spec_extras = {
-    :required_ruby_version => '>= 1.9.3'
+    :required_ruby_version => '>= 1.9.2'
   }
 end
 
