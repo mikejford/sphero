@@ -11,3 +11,11 @@
   * Works with Ruby 1.9.2 for us regular folks
   * Sphero.start method to endlessly retry when connecting
   * I think heading might work again, not too sure
+
+=== 1.1.0 / 2013-01-04
+
+* 3 enhancements
+
+  * Pass a block to Sphero.start for DSL-awesomeness
+  * Use Sphero#keep_going as a nicer alias for Ruby's sleep command
+  * Add some additional test coverage

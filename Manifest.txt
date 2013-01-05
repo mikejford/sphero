@@ -8,3 +8,4 @@ lib/sphero.rb
 lib/sphero/request.rb
 lib/sphero/response.rb
 test/test_sphero.rb
+test/test_sphero_request.rb

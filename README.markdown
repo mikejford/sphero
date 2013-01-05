@@ -13,6 +13,29 @@ provided by the bluetooth connection.
 
 ## SYNOPSIS:
 
+You can easily start your Sphero and send it commands like this:
+
+```ruby
+Sphero.start "/dev/tty.Sphero-PRG-RN-SPP" do
+	ping
+
+	# Roll 0 degrees, speed 125
+	roll(125, 0)
+
+	# Turn 360 degrees, 30 degrees at a time
+	0.step(360, 30) { |h|
+  	h = 0 if h == 360
+
+  	# Set the heading to h degrees
+  	heading = h
+  	keep_going 1
+	}
+	keep_going 1
+	stop
+```
+
+Here is a another way to do the same thing via just normal method calls:
+
 ```ruby
 s = Sphero.new "/dev/tty.Sphero-PRG-RN-SPP"
 s.ping
@@ -45,6 +68,7 @@ s.stop
 (The MIT License)
 
 Copyright (c) 2012 Aaron Patterson
+Additional Copyright (c) 2012-2013 The Hybrid Group
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

@@ -4,18 +4,20 @@ require 'sphero/response'
 require 'thread'
 
 class Sphero
-  VERSION = '1.0.1'
+  VERSION = '1.1.0'
 
   class << self
-    def start(dev)
-      self.new dev
+    def start(dev, &block)
+      sphero = self.new dev
+      sphero.instance_eval(&block) if block_given?
+      sphero
     rescue Errno::EBUSY
       retry
     end
   end
 
   def initialize dev
-    @sp   = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
+    initialize_serialport
     @dev  = 0x00
     @seq  = 0x00
     @lock = Mutex.new
@@ -85,7 +87,16 @@ class Sphero
     write Request::SetRotationRate.new(@seq, h)
   end
 
+  # just a nicer alias for Ruby's own sleep
+  def keep_going(duration)
+    sleep duration
+  end
+
   private
+  
+  def initialize_serialport
+    @sp = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
+  end
 
   def write packet
     header = nil
@@ -109,46 +120,3 @@ class Sphero
   end
 end
 
-if $0 == __FILE__
-  begin
-    s = Sphero.new "/dev/tty.Sphero-BRR-RN-SPP"
-  rescue Errno::EBUSY
-    retry
-  end
-
-  10.times {
-    p s.ping
-  }
-
-  trap(:INT) {
-    s.stop
-    exit!
-  }
-
-  #s.roll 100, 0
-
-  p s.user_led
-  exit
-  loop do
-    [0, 180].each do |dir|
-      s.heading = dir
-      sleep 10
-    end
-
-    #[
-    #  [0, 0, 0xFF],
-    #  [0xFF, 0, 0],
-    #  [0, 0xFF, 0],
-    #].each do |color|
-    #  s.rgb(*color)
-    #  sleep 5
-    #end
-  end
-
-  #36.times {
-  #  i = 10
-  #  p :step => i
-  #  s.heading = i
-  #  sleep 0.5
-  #}
-end
