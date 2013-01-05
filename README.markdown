@@ -26,10 +26,11 @@ Sphero.start "/dev/tty.Sphero-PRG-RN-SPP" do
 	0.step(360, 30) { |h|
   	h = 0 if h == 360
 
-  	# Set the heading to h degrees
-  	heading = h
-  	keep_going 1
+		# Set the heading to h degrees
+ 		heading = h
+ 		keep_going 1
 	}
+
 	keep_going 1
 	stop
 end

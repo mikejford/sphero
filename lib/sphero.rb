@@ -4,7 +4,7 @@ require 'sphero/response'
 require 'thread'
 
 class Sphero
-  VERSION = '1.1.0'
+  VERSION = '1.1.1'
 
   class << self
     def start(dev, &block)
@@ -17,7 +17,7 @@ class Sphero
   end
 
   def initialize dev
-    initialize_serialport
+    initialize_serialport dev
     @dev  = 0x00
     @seq  = 0x00
     @lock = Mutex.new
@@ -94,7 +94,7 @@ class Sphero
 
   private
   
-  def initialize_serialport
+  def initialize_serialport dev
     @sp = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
   end
 
