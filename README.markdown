@@ -32,6 +32,7 @@ Sphero.start "/dev/tty.Sphero-PRG-RN-SPP" do
 	}
 	keep_going 1
 	stop
+end
 ```
 
 Here is a another way to do the same thing via just normal method calls:
