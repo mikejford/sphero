@@ -4,7 +4,7 @@ require 'sphero/response'
 require 'thread'
 
 class Sphero
-  VERSION = '1.1.2'
+  VERSION = '1.1.3'
 
   class << self
     def start(dev, &block)
@@ -51,7 +51,7 @@ class Sphero
     write Request::GetPowerState.new(@seq)
   end
 
-  def sleep wakeup = 0, macro = 0
+  def sphero_sleep wakeup = 0, macro = 0
     write Request::Sleep.new(@seq, wakeup, macro)
   end
 

@@ -25,3 +25,9 @@
 * 1 bugfix
 
   * Correct Sphero#keep_going to call Kernel sleep method correctly
+
+=== 1.1.3 / 2013-01-07
+
+* 1 enhancement/bugfix depending on how you look at it
+
+  * Change Sphero#sleep to Sphero#sphero_sleep to distingish naive call to Kernel sleep

@@ -67,12 +67,12 @@ class TestSphero < MiniTest::Unit::TestCase
   	@sphero.power_state
   end
   
-  def test_sleep
+  def test_sphero_sleep
   	wakeup = 1
   	macro = 2
   	Sphero::Request::Sleep.expects(:new).with(@seq, wakeup, macro)
   	@sphero.expects(:write)
-  	@sphero.sleep wakeup, macro
+  	@sphero.sphero_sleep wakeup, macro
   end
 
   def test_roll
