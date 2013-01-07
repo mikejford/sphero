@@ -4,7 +4,7 @@ require 'sphero/response'
 require 'thread'
 
 class Sphero
-  VERSION = '1.1.1'
+  VERSION = '1.1.2'
 
   class << self
     def start(dev, &block)
@@ -89,7 +89,7 @@ class Sphero
 
   # just a nicer alias for Ruby's own sleep
   def keep_going(duration)
-    sleep duration
+    Kernel::sleep duration
   end
 
   private

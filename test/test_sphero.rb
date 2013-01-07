@@ -13,6 +13,13 @@ class TestSphero < MiniTest::Unit::TestCase
     assert_kind_of Sphero, Sphero.start('someport')
   end
 
+	def test_start_sphero_executes_block
+		Sphero.any_instance.expects(:ping)
+    Sphero.start('someport') do
+			ping
+		end
+	end
+
   def test_ping
   	Sphero::Request::Ping.expects(:new).with(@seq)
   	@sphero.expects(:write)
@@ -80,5 +87,10 @@ class TestSphero < MiniTest::Unit::TestCase
   def test_stop
   	@sphero.expects(:roll).with(0, 0)
   	@sphero.stop
+  end
+
+  def test_keepgoing
+  	Kernel.expects(:sleep).with(3)
+  	@sphero.keep_going 3
   end
 end

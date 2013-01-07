@@ -19,3 +19,9 @@
   * Pass a block to Sphero.start for DSL-awesomeness
   * Use Sphero#keep_going as a nicer alias for Ruby's sleep command
   * Add some additional test coverage
+
+=== 1.1.2 / 2013-01-07
+
+* 1 bugfix
+
+  * Correct Sphero#keep_going to call Kernel sleep method correctly
