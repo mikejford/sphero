@@ -22,7 +22,7 @@ class Sphero
     @seq  = 0x00
     @lock = Mutex.new
   end
-
+  
   def ping
     write Request::Ping.new(@seq)
   end
@@ -96,6 +96,11 @@ class Sphero
   
   def initialize_serialport dev
     @sp = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
+    os = RUBY_PLATFORM.split("-")[1]
+    if (os == 'mswin' or os == 'bccwin' or os == 'mingw' or os == 'mingw32')
+      @sp.read_timeout=1000
+      @sp.write_timeout=0
+    end
   end
 
   def write packet
