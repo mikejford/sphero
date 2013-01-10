@@ -31,3 +31,9 @@
 * 1 enhancement/bugfix depending on how you look at it
 
   * Change Sphero#sleep to Sphero#sphero_sleep to distingish naive call to Kernel sleep
+
+=== 1.1.4 / 2013-01-10
+
+* 1 enhancement
+
+  * Add constants FORWARD, BACKWARD, RIGHT, & LEFT for quick directionality

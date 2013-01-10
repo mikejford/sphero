@@ -16,6 +16,26 @@ provided by the bluetooth connection.
 You can easily start your Sphero and send it commands like this:
 
 ```ruby
+Sphero.start '/dev/tty.Sphero-YBW-RN-SPP' do
+	roll 60, FORWARD
+	keep_going 3
+
+	roll 60, RIGHT
+	keep_going 3
+
+	roll 60, BACKWARD
+	keep_going 3
+
+	roll 60, LEFT
+	keep_going 3
+
+	stop
+end
+```
+
+Here is another example:
+
+```ruby
 Sphero.start "/dev/tty.Sphero-PRG-RN-SPP" do
 	ping
 
@@ -36,7 +56,7 @@ Sphero.start "/dev/tty.Sphero-PRG-RN-SPP" do
 end
 ```
 
-Here is a another way to do the same thing via just normal method calls:
+Here is a another way to do the same thing as the previos example, via just normal method calls instead of the DSL:
 
 ```ruby
 s = Sphero.new "/dev/tty.Sphero-PRG-RN-SPP"
