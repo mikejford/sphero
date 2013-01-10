@@ -4,7 +4,12 @@ require 'sphero/response'
 require 'thread'
 
 class Sphero
-  VERSION = '1.1.3'
+  VERSION = '1.1.4'
+
+  FORWARD = 0
+  RIGHT = 90
+  BACKWARD = 180
+  LEFT = 270
 
   class << self
     def start(dev, &block)

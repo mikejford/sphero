@@ -93,4 +93,11 @@ class TestSphero < MiniTest::Unit::TestCase
   	Kernel.expects(:sleep).with(3)
   	@sphero.keep_going 3
   end
+
+  def test_directions
+    assert_equal 0, Sphero::FORWARD
+    assert_equal 90, Sphero::RIGHT
+    assert_equal 180, Sphero::BACKWARD
+    assert_equal 270, Sphero::LEFT
+  end
 end
