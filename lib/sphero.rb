@@ -99,7 +99,7 @@ class Sphero
   private
   
   def lock
-    @@lock || = Mutex.new
+    @@lock ||= Mutex.new
   end
 
   def is_windows?
