@@ -10,11 +10,11 @@ Hoe.plugin :gemspec # `gem install hoe-gemspec`
 Hoe.plugin :git     # `gem install hoe-git`
 
 Hoe.spec 'hybridgroup-sphero' do
-  developer('Aaron Patterson', 'aaron@tenderlovemaking.com')
+  developer('Hybrid Group', 'sphero@hybridgroup.com')
   self.readme_file   = 'README.markdown'
   self.history_file  = 'CHANGELOG.rdoc'
   self.extra_rdoc_files  = FileList['*.{rdoc,markdown}']
-  self.extra_deps << ['serialport']
+  self.extra_deps << ['hybridgroup-serialport']
 
   self.spec_extras = {
     :required_ruby_version => '>= 1.9.2'

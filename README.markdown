@@ -1,6 +1,6 @@
 # sphero
 
-* http://github.com/tenderlove/sphero
+* http://github.com/hybridgroup/sphero
 
 ## DESCRIPTION:
 
@@ -83,14 +83,14 @@ s.stop
 
 ## INSTALL:
 
-* gem install sphero
+* gem install hybridgroup-sphero
 
 ## LICENSE:
 
 (The MIT License)
 
 Copyright (c) 2012 Aaron Patterson
-Additional Copyright (c) 2012-2013 The Hybrid Group
+Copyright (c) 2012-2013 The Hybrid Group
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
