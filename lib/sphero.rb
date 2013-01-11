@@ -25,7 +25,7 @@ class Sphero
     initialize_serialport dev
     @dev  = 0x00
     @seq  = 0x00
-    @lock = Mutex.new
+    self.lock = Mutex.new
   end
   
   def ping
@@ -99,14 +99,14 @@ class Sphero
 
   private
   
-  def is_windows?
-    os = RUBY_PLATFORM.split("-")[1]
-    if (os == 'mswin' or os == 'bccwin' or os == 'mingw' or os == 'mingw32')
-      true
-    else
-      false
-    end
+  def self.lock
+    @@lock
   end
+
+  def is_windows?
+    return (RUBY_PLATFORM.split("-")[1] == ('mswin' or 'bccwin' or 'mingw' or 'mingw32')) ? true : false
+  end
+
   def initialize_serialport dev
     @sp = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
     if is_windows?
@@ -120,7 +120,7 @@ class Sphero
     header = nil
     body   = nil
 
-    @lock.synchronize do
+    self.lock.synchronize do
       @sp.write packet.to_str
       @seq += 1
 
