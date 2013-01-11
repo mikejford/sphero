@@ -25,7 +25,6 @@ class Sphero
     initialize_serialport dev
     @dev  = 0x00
     @seq  = 0x00
-    self.lock = Mutex.new
   end
   
   def ping
@@ -99,8 +98,8 @@ class Sphero
 
   private
   
-  def self.lock
-    @@lock
+  def lock
+    @@lock || = Mutex.new
   end
 
   def is_windows?
@@ -120,7 +119,7 @@ class Sphero
     header = nil
     body   = nil
 
-    self.lock.synchronize do
+    lock.synchronize do
       @sp.write packet.to_str
       @seq += 1
 
