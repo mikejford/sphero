@@ -14,8 +14,15 @@ class Sphero
   class << self
     def start(dev, &block)
       sphero = self.new dev
-      sphero.instance_eval(&block) if block_given?
-      sphero
+      if (block_given?)
+        begin
+           sphero.instance_eval(&block)
+        ensure
+           sphero.close
+        end
+        return nil
+      end
+      return sphero
     rescue Errno::EBUSY
       retry
     end
@@ -28,6 +35,12 @@ class Sphero
     @lock = Mutex.new
   end
   
+  def close
+    @lock.synchronize do
+      @sp.close
+    end
+  end
+
   def ping
     write Request::Ping.new(@seq)
   end
@@ -107,6 +120,7 @@ class Sphero
       false
     end
   end
+
   def initialize_serialport dev
     @sp = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
     if is_windows?

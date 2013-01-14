@@ -13,12 +13,13 @@ class TestSphero < MiniTest::Unit::TestCase
     assert_kind_of Sphero, Sphero.start('someport')
   end
 
-	def test_start_sphero_executes_block
-		Sphero.any_instance.expects(:ping)
+  def test_start_sphero_executes_block
+    Sphero.any_instance.expects(:ping)
+    Sphero.any_instance.expects(:close)
     Sphero.start('someport') do
-			ping
-		end
-	end
+      ping
+    end
+  end
 
   def test_ping
   	Sphero::Request::Ping.expects(:new).with(@seq)
