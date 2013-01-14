@@ -77,6 +77,23 @@ sleep 1
 s.stop
 ```
 
+## Pairing sphero with ubuntu
+```
+$ sudo usermod -a -G dialout <user>
+$ sudo shutdown -r now
+```
+
+Pair the sphero with the ubuntu bluetooth manager
+
+```
+$ sudo hcitool scan 
+Scanning ...
+<address>		Sphero
+$ sudo rfcomm bind /dev/rfcomm0 <address> 1
+```
+
+You may now access the sphero from `/dev/rfcomm0`
+
 ## REQUIREMENTS:
 
 * A Sphero ball connected to your computer
