@@ -113,5 +113,12 @@ class Sphero
         @data.pack 'nC'
       end
     end
+
+    class ConfigureCollisionDetection < Sphero
+      def initialize seq, meth, x_t, y_t, x_spd, y_spd, dead
+        super(seq, [meth, x_t, y_t, x_spd, y_spd, dead])
+        @cid = 0x12
+      end
+    end
   end
 end

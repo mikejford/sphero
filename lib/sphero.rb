@@ -11,6 +11,8 @@ class Sphero
   BACKWARD = 180
   LEFT = 270
 
+  attr_accessor :connection_types, :async_responses
+
   class << self
     def start(dev, &block)
       sphero = self.new dev
@@ -33,6 +35,7 @@ class Sphero
     @dev  = 0x00
     @seq  = 0x00
     @lock = Mutex.new
+    @async_responses = []
   end
   
   def close
@@ -110,6 +113,30 @@ class Sphero
     Kernel::sleep duration
   end
 
+  # configure collision detection messages
+  def configure_collision_detection meth, x_t, y_t, x_spd, y_spd, dead
+    write Request::ConfigureCollisionDetection.new(@seq, meth, x_t, y_t, x_spd, y_spd, dead)
+  end
+
+  # read all outstanding async packets and store in async_responses
+  # would not do well to receive simple responses this way...
+  def read_async_messages
+    header, body = nil
+    new_responses = []
+
+    @lock.synchronize do
+      header, body = read_next_response
+
+      while header && Response.async?(header)
+        new_responses << Response::AsyncResponse.response(header, body)
+        header, body = read_next_response
+      end
+    end
+    
+    async_responses.concat(new_responses) unless new_responses.empty?
+    return !new_responses.empty?
+  end
+
   private
   
   def is_windows?
@@ -131,17 +158,20 @@ class Sphero
   end
 
   def write packet
-    header = nil
-    body   = nil
+    header, body = nil
 
     @lock.synchronize do
       @sp.write packet.to_str
       @seq += 1
 
-      header   = @sp.read(5).unpack 'C5'
-      body     = @sp.read header.last
+      # pick off asynch packets and store, till we get to the message response
+      header, body = read_next_response(true)
+      while header && Response.async?(header)
+        async_responses << Response::AsyncResponse.response(header, body)
+        header, body = read_next_response
+      end
     end
-
+    
     response = packet.response header, body
 
     if response.success?
@@ -149,6 +179,24 @@ class Sphero
     else
       raise response
     end
+  end
+
+  def read_next_response(blocking=false)
+    header, body = nil
+
+    begin
+      if blocking
+        header = @sp.read(5).unpack 'C5'
+      else
+        header = @sp.read_nonblock(5).unpack 'C5'
+      end
+      body  = @sp.read header.last
+    rescue IO::WaitReadable # raised by read_response when no data for non-blocking read
+      return nil, nil
+      # TODO: handle other exceptions
+    end
+
+    return header, body
   end
 end
 
