@@ -199,11 +199,14 @@ class Sphero
 
   def read_next_response(blocking=false)
     begin
-      if blocking
-        header = @sp.read(5).unpack 'C5'
+      if blocking || is_windows?
+        data = @sp.read(5)
+        return nil unless data && data.length == 5
+        header = data.unpack 'C5'
       else
         header = @sp.read_nonblock(5).unpack 'C5'
       end
+
       body  = @sp.read header.last
     rescue IO::WaitReadable # raised by read_response when no data for non-blocking read
       return nil
