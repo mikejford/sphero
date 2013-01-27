@@ -13,7 +13,7 @@ class Sphero
 
   DEFAULT_RETRIES = 3
 
-  attr_accessor :connection_types, :async_responses
+  attr_accessor :connection_types, :async_messages
 
   class << self
     def start(dev, &block)
@@ -39,7 +39,7 @@ class Sphero
     @dev  = 0x00
     @seq  = 0x00
     @lock = Mutex.new
-    @async_responses = []
+    @async_messages = []
   end
   
   def close
@@ -149,7 +149,7 @@ class Sphero
       end
     end
     
-    async_responses.concat(new_responses) unless new_responses.empty?
+    async_messages.concat(new_responses) unless new_responses.empty?
     return !new_responses.empty?
   end
 
@@ -183,7 +183,7 @@ class Sphero
       # pick off asynch packets and store, till we get to the message response
       header, body = read_next_response(true)
       while header && Response.async?(header)
-        async_responses << Response::AsyncResponse.response(header, body)
+        async_messages << Response::AsyncResponse.response(header, body)
         header, body = read_next_response(true)
       end
     end
@@ -211,7 +211,7 @@ class Sphero
       retry
       # TODO: handle other exceptions
     end
-    
+
     return header, body
   end
 end
