@@ -23,16 +23,20 @@ class Sphero
       @body   = body
     end
 
+    def valid?
+      @header && @body  
+    end
+
     def empty?
-      @header[DLEN] == 1
+      valid? && @header[DLEN] == 1
     end
 
     def success?
-      @header[MRSP] == CODE_OK
+      valid? && @header[MRSP] == CODE_OK
     end
 
     def seq
-      @header[SEQ]
+      valid? && @header[SEQ]
     end
 
     def body
@@ -108,12 +112,12 @@ class Sphero
       MACRO_MARKERS = 0x06
       COLLISION_DETECTED = 0x07
 
-      VALID_REPONSES = {POWER_NOTIFICATION => 'AsyncResponse',
-                        LEVEL_1_DIAGNOSTIC => 'AsyncResponse',
-                        SENSOR_DATA => 'AsyncResponse',
-                        CONFIG_BLOCK => 'AsyncResponse',
-                        PRESLEEP_WARNING => 'AsyncResponse',
-                        MACRO_MARKERS => 'AsyncResponse',
+      VALID_REPONSES = {POWER_NOTIFICATION => 'Sphero::Response::PowerNotification',
+                        #LEVEL_1_DIAGNOSTIC => 'AsyncResponse',
+                        SENSOR_DATA => 'Sphero::Response::SensorData',
+                        #CONFIG_BLOCK => 'AsyncResponse',
+                        #PRESLEEP_WARNING => 'AsyncResponse',
+                        #MACRO_MARKERS => 'AsyncResponse',
                         COLLISION_DETECTED => 'Sphero::Response::CollisionDetected'}
 
       def self.valid?(header)
@@ -146,6 +150,15 @@ class Sphero
 
       def seq
         1
+      end
+    end
+
+    class PowerNotification < GetPowerState
+    end
+
+    class SensorData < AsyncResponse
+      def body
+        @body.unpack 's*'
       end
     end
 

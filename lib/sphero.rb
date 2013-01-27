@@ -11,10 +11,13 @@ class Sphero
   BACKWARD = 180
   LEFT = 270
 
+  DEFAULT_RETRIES = 3
+
   attr_accessor :connection_types, :async_responses
 
   class << self
     def start(dev, &block)
+      retries_left = DEFAULT_RETRIES
       sphero = self.new dev
       if (block_given?)
         begin
@@ -26,7 +29,8 @@ class Sphero
       end
       return sphero
     rescue Errno::EBUSY
-      retry
+      retries_left = retries_left - 1
+      retry unless retries_left > 0
     end
   end
 
@@ -113,6 +117,18 @@ class Sphero
     Kernel::sleep duration
   end
 
+  ## async messages
+
+  # configure power notification messages
+  def set_power_notification enable=true
+    write Request::SetPowerNotification.new(@seq, enable ? 0x01 : 0x00)
+  end
+
+  # configure data streaming notification messages
+  def set_data_streaming n, m, mask, pcnt, mask2
+    write Request::SetDataStreaming.new(@seq, n, m, mask, pcnt, mask2)
+  end
+
   # configure collision detection messages
   def configure_collision_detection meth, x_t, y_t, x_spd, y_spd, dead
     write Request::ConfigureCollisionDetection.new(@seq, meth, x_t, y_t, x_spd, y_spd, dead)
@@ -168,22 +184,20 @@ class Sphero
       header, body = read_next_response(true)
       while header && Response.async?(header)
         async_responses << Response::AsyncResponse.response(header, body)
-        header, body = read_next_response
+        header, body = read_next_response(true)
       end
     end
-    
+
     response = packet.response header, body
 
     if response.success?
       response
     else
-      raise response
+      raise "Unable to write to Sphero!"
     end
   end
 
   def read_next_response(blocking=false)
-    header, body = nil
-
     begin
       if blocking
         header = @sp.read(5).unpack 'C5'
@@ -192,10 +206,12 @@ class Sphero
       end
       body  = @sp.read header.last
     rescue IO::WaitReadable # raised by read_response when no data for non-blocking read
-      return nil, nil
+      return nil
+    rescue Errno::EBUSY
+      retry
       # TODO: handle other exceptions
     end
-
+    
     return header, body
   end
 end
