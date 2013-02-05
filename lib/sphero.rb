@@ -1,4 +1,5 @@
-require 'serialport'
+#require 'serialport'
+require 'socket'
 require 'sphero/request'
 require 'sphero/response'
 require 'thread'
@@ -35,7 +36,8 @@ class Sphero
   end
 
   def initialize dev
-    initialize_serialport dev
+    #initialize_serialport dev
+    initialize_socket dev
     @dev  = 0x00
     @seq  = 0x00
     @lock = Mutex.new
@@ -173,6 +175,10 @@ class Sphero
     end
   end
 
+  def initialize_socket dev
+    @sp = TCPSocket.new 'localhost', dev
+  end
+
   def write packet
     header, body = nil
 
@@ -212,7 +218,10 @@ class Sphero
       return nil
     rescue Errno::EBUSY
       retry
-      # TODO: handle other exceptions
+    rescue Exception => e
+      puts e.message
+      puts e.backtrace.inspect
+      return nil
     end
 
     return header, body
