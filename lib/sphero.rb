@@ -30,6 +30,7 @@ class Sphero
       end
       return sphero
     rescue Errno::EBUSY
+      puts retries_left
       retries_left = retries_left - 1
       retry unless retries_left > 0
     end
@@ -184,14 +185,21 @@ class Sphero
 
     @lock.synchronize do
       @sp.write packet.to_str
+      @sp.flush
       @seq += 1
 
       # pick off asynch packets and store, till we get to the message response
-      header, body = read_next_response(true)
-      while header && Response.async?(header)
-        async_messages << Response::AsyncResponse.response(header, body)
-        header, body = read_next_response(true)
-      end
+      header = read_header(true)
+      body = read_body(header.last, true) if header
+      puts header
+      puts body
+      puts "---"
+      # while header && Response.async?(header)
+      #   async_messages << Response::AsyncResponse.response(header, body)
+      #   header, body = read_next_response(true)
+      #   puts header
+      #   puts body
+      # end
     end
 
     response = packet.response header, body
@@ -203,19 +211,36 @@ class Sphero
     end
   end
 
-  def read_next_response(blocking=false)
-    begin
-      if blocking || is_windows?
-        data = @sp.read(5)
-        return nil unless data && data.length == 5
-        header = data.unpack 'C5'
-      else
-        header = @sp.read_nonblock(5).unpack 'C5'
-      end
+  # def read_next_response(blocking=false)
+  #   begin
+  #     if blocking || is_windows?
+  #       data = @sp.read(5)
+  #       return nil unless data && data.length == 5
+  #       header = data.unpack 'C5'
+  #     else
+  #       header = @sp.read_nonblock(5).unpack 'C5'
+  #     end
 
-      body  = @sp.read header.last
-    rescue IO::WaitReadable # raised by read_response when no data for non-blocking read
-      return nil
+  #     body  = @sp.read(header.last)
+  #   # rescue IO::WaitReadable # raised by read_response when no data for non-blocking read
+  #   #   return nil
+  #   rescue Errno::EBUSY
+  #     retry
+  #   rescue Exception => e
+  #     puts e.message
+  #     puts e.backtrace.inspect
+  #     return nil
+  #   end
+
+  #   return header, body
+  # end
+
+  def read_header(blocking=false)
+    begin
+      data = read_next_chunk(5, blocking)
+      puts data
+      return nil unless data && data.length == 5
+      header = data.unpack 'C5'
     rescue Errno::EBUSY
       retry
     rescue Exception => e
@@ -224,7 +249,40 @@ class Sphero
       return nil
     end
 
-    return header, body
+    header
   end
+
+  def read_body(len, blocking=false)
+    begin
+      data = read_next_chunk(len, blocking)
+      return nil unless data && data.length == len
+    rescue Errno::EBUSY
+      retry
+    rescue Exception => e
+      puts e.message
+      puts e.backtrace.inspect
+      return nil
+    end
+
+    data
+  end
+
+  def read_next_chunk(len, blocking=false)
+    begin
+      if blocking || is_windows?
+        data = @sp.read(len)
+        return nil unless data && data.length == len
+      else
+        data = @sp.read_nonblock(len)
+      end
+    rescue Errno::EBUSY
+      retry
+    rescue Exception => e
+      puts e.message
+      puts e.backtrace.inspect
+      return nil
+    end
+    data
+  end  
 end
 
