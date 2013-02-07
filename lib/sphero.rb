@@ -37,6 +37,7 @@ class Sphero
   end
 
   def initialize dev
+    # TODO: auto-detect both serial and socket
     #initialize_serialport dev
     initialize_socket dev
     @dev  = 0x00
@@ -47,6 +48,7 @@ class Sphero
   
   def close
     @lock.synchronize do
+      @sp.flush
       @sp.close
     end
   end
@@ -177,29 +179,33 @@ class Sphero
   end
 
   def initialize_socket dev
-    @sp = TCPSocket.new 'localhost', dev
+    @sp = TCPSocket.open 'localhost', dev
+    #rs, ws = IO.select([@sp], [@sp], [], 20)
   end
 
   def write packet
     header, body = nil
 
     @lock.synchronize do
+      rs, ws = IO.select([], [@sp], [], 20)
       @sp.write packet.to_str
       @sp.flush
       @seq += 1
 
-      # pick off asynch packets and store, till we get to the message response
-      header = read_header(true)
+      header = nil
+      loop do
+        header = read_header(true)
+        break if header
+      end
+
       body = read_body(header.last, true) if header
-      puts header
-      puts body
-      puts "---"
-      # while header && Response.async?(header)
-      #   async_messages << Response::AsyncResponse.response(header, body)
-      #   header, body = read_next_response(true)
-      #   puts header
-      #   puts body
-      # end
+
+      # pick off asynch packets and store, till we get to the message response
+      while header && Response.async?(header)
+        async_messages << Response::AsyncResponse.response(header, body)
+        header = read_header(true)
+        body = read_body(header.last, true) if header
+      end
     end
 
     response = packet.response header, body
@@ -211,34 +217,9 @@ class Sphero
     end
   end
 
-  # def read_next_response(blocking=false)
-  #   begin
-  #     if blocking || is_windows?
-  #       data = @sp.read(5)
-  #       return nil unless data && data.length == 5
-  #       header = data.unpack 'C5'
-  #     else
-  #       header = @sp.read_nonblock(5).unpack 'C5'
-  #     end
-
-  #     body  = @sp.read(header.last)
-  #   # rescue IO::WaitReadable # raised by read_response when no data for non-blocking read
-  #   #   return nil
-  #   rescue Errno::EBUSY
-  #     retry
-  #   rescue Exception => e
-  #     puts e.message
-  #     puts e.backtrace.inspect
-  #     return nil
-  #   end
-
-  #   return header, body
-  # end
-
   def read_header(blocking=false)
     begin
       data = read_next_chunk(5, blocking)
-      puts data
       return nil unless data && data.length == 5
       header = data.unpack 'C5'
     rescue Errno::EBUSY
@@ -246,7 +227,7 @@ class Sphero
     rescue Exception => e
       puts e.message
       puts e.backtrace.inspect
-      return nil
+      retry
     end
 
     header
@@ -261,7 +242,7 @@ class Sphero
     rescue Exception => e
       puts e.message
       puts e.backtrace.inspect
-      return nil
+      retry
     end
 
     data
@@ -270,6 +251,7 @@ class Sphero
   def read_next_chunk(len, blocking=false)
     begin
       if blocking || is_windows?
+        rs, ws, = IO.select([@sp], [], [], 20)
         data = @sp.read(len)
         return nil unless data && data.length == len
       else
