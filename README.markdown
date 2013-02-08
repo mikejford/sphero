@@ -78,13 +78,13 @@ s.stop
 ```
 
 ## Pairing sphero with ubuntu
+Add your user to the `dialout` group
 ```
 $ sudo usermod -a -G dialout <user>
-$ sudo shutdown -r now
 ```
+Then logout or restart your computer. Once your user is logged back in, pair the sphero with the ubuntu bluetooth manager.
 
-Pair the sphero with the ubuntu bluetooth manager
-
+Once paired, you may now bind your sphero to a rfcomm port
 ```
 $ sudo hcitool scan 
 Scanning ...
