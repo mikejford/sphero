@@ -1,5 +1,3 @@
-#require 'serialport'
-require 'socket'
 require 'sphero/request'
 require 'sphero/response'
 require 'thread'
@@ -37,9 +35,12 @@ class Sphero
   end
 
   def initialize dev
-    # TODO: auto-detect both serial and socket
-    #initialize_serialport dev
-    initialize_socket dev
+    if dev.is_a?(String)
+      initialize_serialport dev
+    else
+      @sp = dev
+    end
+
     @dev  = 0x00
     @seq  = 0x00
     @lock = Mutex.new
@@ -170,17 +171,15 @@ class Sphero
   end
 
   def initialize_serialport dev
+    require 'serialport'
     @sp = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
     if is_windows?
       @sp.read_timeout=1000
       @sp.write_timeout=0
       @sp.initial_byte_offset=5
     end
-  end
-
-  def initialize_socket dev
-    @sp = TCPSocket.open 'localhost', dev
-    #rs, ws = IO.select([@sp], [@sp], [], 20)
+  rescue LoadError
+    puts "Please 'gem install hybridgroup-serialport' for serial port support."
   end
 
   def write packet
