@@ -188,7 +188,6 @@ class Sphero
     @lock.synchronize do
       rs, ws = IO.select([], [@sp], [], 20)
       @sp.write packet.to_str
-      @sp.flush
       @seq += 1
 
       header = nil
