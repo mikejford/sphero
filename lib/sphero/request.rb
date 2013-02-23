@@ -113,5 +113,73 @@ class Sphero
         @data.pack 'nC'
       end
     end
+
+    class SetPowerNotification < Sphero
+      def initialize seq, enable
+        super(seq, [enable])
+        @cid = 0x21
+      end
+    end
+
+    GYRO_AXIS_H_FILTERED = 0x0000_0001
+    GYRO_AXIS_M_FILTERED = 0x0000_0002
+    GYRO_AXIS_L_FILTERED = 0x0000_0004 
+    LEFT_MOTOR_BACK_EMF_FILTERED = 0x0000_0020
+    RIGHT_MOTOR_BACK_EMF_FILTERED = 0x0000_0040 
+    MAGNETOMETER_AXIS_Z_FILTERED = 0x0000_0080
+    MAGNETOMETER_AXIS_Y_FILTERED = 0x0000_0100
+    MAGNETOMETER_AXIS_X_FILTERED = 0x0000_0200
+    GYRO_AXIS_Z_FILTERED = 0x0000_0400
+    GYRO_AXIS_Y_FILTERED = 0x0000_0800
+    GYRO_AXIS_X_FILTERED = 0x0000_1000
+    ACCELEROMETER_AXIS_Z_FILTERED = 0x0000_2000
+    ACCELEROMETER_AXIS_Y_FILTERED = 0x0000_4000
+    ACCELEROMETER_AXIS_X_FILTERED = 0x0000_8000
+    IMU_YAW_ANGLE_FILTERED = 0x0001_0000
+    IMU_ROLL_ANGLE_FILTERED = 0x0002_0000
+    IMU_PITCH_ANGLE_FILTERED = 0x0004_0000
+    LEFT_MOTOR_BACK_EMF_RAW = 0x0020_0000
+    RIGHT_MOTOR_BACK_EMF_RAW = 0x0040_0000
+    MAGNETOMETER_AXIS_Z_RAW = 0x0080_0000
+    MAGNETOMETER_AXIS_Y_RAW = 0x0100_0000
+    MAGNETOMETER_AXIS_X_RAW = 0x0200_0000
+    GYRO_AXIS_Z_RAW = 0x0400_0000
+    GYRO_AXIS_Y_RAW = 0x0800_0000
+    GYRO_AXIS_X_RAW = 0x1000_0000
+    ACCELEROMETER_AXIS_Z_RAW = 0x2000_0000
+    ACCELEROMETER_AXIS_Y_RAW = 0x4000_0000
+    ACCELEROMETER_AXIS_X_RAW = 0x8000_0000
+
+    QUATERNION_Q0 = 0x0000_0001
+    QUATERNION_Q1 = 0x0000_0002
+    QUATERNION_Q2 = 0x0000_0004
+    QUATERNION_Q3 = 0x0000_0008
+    ODOMETER_X = 0x0000_0010
+    ODOMETER_Y = 0x0000_0020
+    ACCELONE = 0x0000_0040
+    VELOCITY_X = 0x0000_0080
+    VELOCITY_Y = 0x0000_0100
+
+    class SetDataStreaming < Sphero
+      def initialize seq, n, m, mask, pcnt, mask2
+        super(seq, [n, m, mask, pcnt, mask2])
+        @cid = 0x12
+        @mask = mask
+        @mask2 = mask2
+      end
+
+      private
+
+      def packet_body
+        @data.pack 'nnNCN'
+      end
+    end
+
+    class ConfigureCollisionDetection < Sphero
+      def initialize seq, meth, x_t, y_t, x_spd, y_spd, dead
+        super(seq, [meth, x_t, y_t, x_spd, y_spd, dead])
+        @cid = 0x12
+      end
+    end
   end
 end

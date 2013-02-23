@@ -14,7 +14,6 @@ Hoe.spec 'hybridgroup-sphero' do
   self.readme_file   = 'README.markdown'
   self.history_file  = 'CHANGELOG.rdoc'
   self.extra_rdoc_files  = FileList['*.{rdoc,markdown}']
-  self.extra_deps << ['hybridgroup-serialport']
 
   self.spec_extras = {
     :required_ruby_version => '>= 1.9.2'
