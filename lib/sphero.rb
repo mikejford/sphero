@@ -49,7 +49,6 @@ class Sphero
   
   def close
     @lock.synchronize do
-      @sp.flush
       @sp.close
     end
   end
