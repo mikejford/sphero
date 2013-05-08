@@ -7,6 +7,9 @@ GEM
       hoe (>= 2.2.0)
     hoe-git (1.5.0)
       hoe (>= 2.2.0)
+    metaclass (0.0.1)
+    mocha (0.13.3)
+      metaclass (~> 0.0.1)
     rake (10.0.4)
 
 PLATFORMS
@@ -16,3 +19,4 @@ DEPENDENCIES
   hoe
   hoe-gemspec
   hoe-git
+  mocha

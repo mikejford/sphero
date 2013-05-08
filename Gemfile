@@ -5,3 +5,4 @@ source "https://rubygems.org"
 gem 'hoe'
 gem 'hoe-gemspec'
 gem 'hoe-git'
+gem 'mocha'
