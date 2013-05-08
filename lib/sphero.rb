@@ -255,7 +255,6 @@ class Sphero
   def read_next_chunk(len, blocking=false)
     begin
       if blocking || is_windows?
-        rs, ws, = IO.select([@sp], [], [], 20)
         data = @sp.read(len)
         return nil unless data && data.length == len
       else
