@@ -1,6 +1,6 @@
 # sphero
 
-* http://github.com/tenderlove/sphero
+* http://github.com/hybridgroup/sphero
 
 ## DESCRIPTION:
 
@@ -77,20 +77,37 @@ sleep 1
 s.stop
 ```
 
+## Pairing sphero with ubuntu
+Add your user to the `dialout` group
+```
+$ sudo usermod -a -G dialout <user>
+```
+Then logout or restart your computer. Once your user is logged back in, pair the sphero with the ubuntu bluetooth manager.
+
+Once paired, you may now bind your sphero to a rfcomm port
+```
+$ sudo hcitool scan 
+Scanning ...
+<address>		Sphero
+$ sudo rfcomm bind /dev/rfcomm0 <address> 1
+```
+
+You may now access the sphero from `/dev/rfcomm0`
+
 ## REQUIREMENTS:
 
 * A Sphero ball connected to your computer
 
 ## INSTALL:
 
-* gem install sphero
+* gem install hybridgroup-sphero
 
 ## LICENSE:
 
 (The MIT License)
 
 Copyright (c) 2012 Aaron Patterson
-Additional Copyright (c) 2012-2013 The Hybrid Group
+Copyright (c) 2012-2013 The Hybrid Group
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
