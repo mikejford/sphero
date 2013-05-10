@@ -97,6 +97,7 @@ You may now access the sphero from `/dev/rfcomm0`
 ## REQUIREMENTS:
 
 * A Sphero ball connected to your computer
+* Supports MRI 1.9.2/1.9.3 and Rubinius 2.0rc1 for sure...
 
 ## INSTALL:
 
