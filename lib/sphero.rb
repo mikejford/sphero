@@ -191,25 +191,29 @@ class Sphero
   def write packet
     header, body = nil
 
+    IO.select([], [@sp], [], 20)
+
     @lock.synchronize do
-      rs, ws = IO.select([], [@sp], [], 20)
       @sp.write packet.to_str
       @seq += 1
+    end
 
-      header = nil
-      loop do
-        header = read_header(true)
-        break if header
-      end
+    header = nil
+    loop do
+      header = read_header(true)
+      break if header
+    end
 
-      body = read_body(header.last, true) if header
+    body = read_body(header.last, true) if header
 
-      # pick off asynch packets and store, till we get to the message response
-      while header && Response.async?(header)
+    # pick off asynch packets and store, till we get to the message response
+    while header && Response.async?(header)
+      @lock.synchronize do
         async_messages << Response::AsyncResponse.response(header, body)
-        header = read_header(true)
-        body = read_body(header.last, true) if header
       end
+      
+      header = read_header(true)
+      body = read_body(header.last, true) if header
     end
 
     response = packet.response header, body
@@ -254,11 +258,13 @@ class Sphero
 
   def read_next_chunk(len, blocking=false)
     begin
-      if blocking || is_windows?
-        data = @sp.read(len)
-        return nil unless data && data.length == len
-      else
-        data = @sp.read_nonblock(len)
+      @lock.synchronize do
+        if blocking || is_windows?
+          data = @sp.read(len)
+          return nil unless data && data.length == len
+        else
+          data = @sp.read_nonblock(len)
+        end
       end
     rescue Errno::EBUSY
       retry
