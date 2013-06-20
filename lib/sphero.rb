@@ -146,25 +146,6 @@ class Sphero
     write Request::ConfigureCollisionDetection.new(@seq, meth, x_t, y_t, x_spd, y_spd, dead)
   end
 
-  # read all outstanding async packets and store in async_responses
-  # would not do well to receive simple responses this way...
-  def read_async_messages
-    header, body = nil
-    new_responses = []
-
-    @lock.synchronize do
-      header, body = read_next_response
-
-      while header && Response.async?(header)
-        new_responses << Response::AsyncResponse.response(header, body)
-        header, body = read_next_response
-      end
-    end
-    
-    async_messages.concat(new_responses) unless new_responses.empty?
-    return !new_responses.empty?
-  end
-
   private
   
   def is_windows?
@@ -211,7 +192,7 @@ class Sphero
       @lock.synchronize do
         async_messages << Response::AsyncResponse.response(header, body)
       end
-      
+
       header = read_header(true)
       body = read_body(header.last, true) if header
     end
