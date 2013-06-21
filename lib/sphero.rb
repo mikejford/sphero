@@ -12,7 +12,7 @@ class Sphero
 
   DEFAULT_RETRIES = 3
 
-  attr_accessor :connection_types, :async_messages
+  attr_accessor :connection_types, :messages
 
   class << self
     def start(dev, &block)
@@ -46,7 +46,7 @@ class Sphero
     @dev  = 0x00
     @seq  = 0x00
     @lock = Mutex.new
-    @async_messages = []
+    @messages = Queue.new
   end
   
   def close
@@ -145,7 +145,7 @@ class Sphero
   def configure_collision_detection meth, x_t, y_t, x_spd, y_spd, dead
     write Request::ConfigureCollisionDetection.new(@seq, meth, x_t, y_t, x_spd, y_spd, dead)
   end
-
+  
   private
   
   def is_windows?
@@ -189,9 +189,7 @@ class Sphero
 
     # pick off asynch packets and store, till we get to the message response
     while header && Response.async?(header)
-      @lock.synchronize do
-        async_messages << Response::AsyncResponse.response(header, body)
-      end
+      messages << Response::AsyncResponse.response(header, body)
 
       header = read_header(true)
       body = read_body(header.last, true) if header
