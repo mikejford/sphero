@@ -237,12 +237,13 @@ class Sphero
 
   def read_next_chunk(len, blocking=false)
     begin
+      @chunk = nil
       @lock.synchronize do
         if blocking || is_windows?
-          data = @sp.read(len)
-          return nil unless data && data.length == len
+          @chunk= @sp.read(len)
+          return nil unless @chunk && @chunk.length == len
         else
-          data = @sp.read_nonblock(len)
+          @chunk = @sp.read_nonblock(len)
         end
       end
     rescue Errno::EBUSY
@@ -252,7 +253,7 @@ class Sphero
       puts e.backtrace.inspect
       return nil
     end
-    data
+    @chunk
   end  
 
   COLORS = {
