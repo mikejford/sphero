@@ -204,7 +204,7 @@ class Sphero
 
     if response.success?
       response
-    else 
+    else
       raise "Unable to write to Sphero!"
     end
   end
@@ -230,6 +230,7 @@ class Sphero
     data = nil
     begin
       data = read_next_chunk(len, blocking)
+      return nil unless data && data.length == len
     rescue Errno::EBUSY
       retry
     rescue Exception => e
