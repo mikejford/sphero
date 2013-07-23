@@ -50,7 +50,11 @@ class Sphero
   end
   
   def close
-    @lock.synchronize do
+    begin
+      stop
+    rescue Exception => e
+      puts e.message
+    ensure
       @sp.close
     end
   end
@@ -179,35 +183,37 @@ class Sphero
       @seq += 1
     end
 
-    header = nil
-    loop do
-      header = read_header(true)
-      break if header
-    end
-
+    IO.select([@sp], [], [], 20)
+    header = read_header(true)
     body = read_body(header.last, true) if header
 
     # pick off asynch packets and store, till we get to the message response
     while header && Response.async?(header)
       messages << Response::AsyncResponse.response(header, body)
 
+      IO.select([@sp], [], [], 20)
       header = read_header(true)
-      body = read_body(header.last, true) if header
+      if header
+        body = read_body(header.last, true)
+      else
+        body = nil
+      end
     end
 
     response = packet.response header, body
 
     if response.success?
       response
-    else
+    else 
       raise "Unable to write to Sphero!"
     end
   end
 
   def read_header(blocking=false)
+    header = nil
     begin
       data = read_next_chunk(5, blocking)
-      return nil unless data && data.length == 5
+      return nil unless data
       header = data.unpack 'C5'
     rescue Errno::EBUSY
       retry
@@ -221,9 +227,9 @@ class Sphero
   end
 
   def read_body(len, blocking=false)
+    data = nil
     begin
       data = read_next_chunk(len, blocking)
-      return nil unless data && data.length == len
     rescue Errno::EBUSY
       retry
     rescue Exception => e
@@ -236,11 +242,11 @@ class Sphero
   end
 
   def read_next_chunk(len, blocking=false)
+    data = nil
     begin
       @lock.synchronize do
         if blocking || is_windows?
           data = @sp.read(len)
-          return nil unless data && data.length == len
         else
           data = @sp.read_nonblock(len)
         end
