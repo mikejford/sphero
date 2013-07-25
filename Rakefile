@@ -9,7 +9,7 @@ Hoe.plugin :minitest
 Hoe.plugin :gemspec # `gem install hoe-gemspec`
 Hoe.plugin :git     # `gem install hoe-git`
 
-Hoe.spec 'hybridgroup-sphero' do
+Hoe.spec 'sphero' do
   developer('Hybrid Group', 'sphero@hybridgroup.com')
   self.readme_file   = 'README.markdown'
   self.history_file  = 'CHANGELOG.rdoc'
