@@ -101,7 +101,7 @@ You may now access the sphero from `/dev/rfcomm0`
 
 ## INSTALL:
 
-* gem install hybridgroup-sphero
+* gem install sphero
 
 ## LICENSE:
 
