@@ -230,15 +230,24 @@ class Sphero
   end
 
   def fixup_header(header)
-    fixed_header = header.drop_while {|i| i != 255 }
+    fixed_header = remove_invalid_bytes(header)
     until fixed_header.size == 5 do
       bytes_needed = 5 - fixed_header.size
       data = read_next_chunk(bytes_needed, true)
       return nil unless data && data.size == bytes_needed
       fixed_header += data.unpack("C#{bytes_needed}")
-      fixed_header = fixed_header.drop_while {|i| i != 255 }
+      fixed_header = remove_invalid_bytes(fixed_header)
     end
     fixed_header
+  end
+
+  def remove_invalid_bytes(header=[])
+    fixed_header = header.drop_while {|i| i != 255 }
+    if fixed_header.size >= 2 && fixed_header[1] != 0xFF && fixed_header[1] != 0xFE
+      fixed_header.drop(2)
+    else
+      fixed_header
+    end
   end
 
   def read_body(len, blocking=false)
