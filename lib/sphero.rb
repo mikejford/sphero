@@ -242,9 +242,16 @@ class Sphero
   end
 
   def remove_invalid_bytes(header=[])
-    fixed_header = header.drop_while {|i| i != 255 }
-    if fixed_header.size >= 2 && fixed_header[1] != 0xFF && fixed_header[1] != 0xFE
+    fixed_header = header.drop_while {|i| i != 0xFF }
+    # FF FF FF
+    if fixed_header.size >= 3 && fixed_header[1] == 0xFF && fixed_header[2] == 0xFF
+      fixed_header.drop(1)
+
+    # FF <not FF or FE>
+    elsif fixed_header.size >= 2 && fixed_header[1] != 0xFF && fixed_header[1] != 0xFE
       fixed_header.drop(2)
+
+    # all good
     else
       fixed_header
     end
