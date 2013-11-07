@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    hoe (3.6.0)
+    hoe (3.7.1)
       rake (>= 0.8, < 11.0)
     hoe-gemspec (1.0.0)
       hoe (>= 2.2.0)
@@ -11,7 +11,7 @@ GEM
     minitest (5.0.8)
     mocha (0.13.3)
       metaclass (~> 0.0.1)
-    rake (10.0.4)
+    rake (10.1.0)
 
 PLATFORMS
   ruby
