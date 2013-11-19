@@ -89,7 +89,7 @@ class Sphero
       end
     end
 
-    class Heading < Request
+    class Heading < Sphero
       def initialize seq, heading
         super(seq, [heading])
         @cid = 0x01
@@ -114,7 +114,7 @@ class Sphero
       end
     end
 
-    class SetPowerNotification < Sphero
+    class SetPowerNotification < Request
       def initialize seq, enable
         super(seq, [enable])
         @cid = 0x21
