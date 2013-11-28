@@ -148,9 +148,12 @@ class Sphero
 
   # configure collision detection messages
   def configure_collision_detection meth, x_t, y_t, x_spd, y_spd, dead
-    write Request::ConfigureCollisionDetection.new(@seq, meth, x_t, y_t, x_spd, y_spd, dead)
+    write Request::ConfigureCollisionDetection.new(@seq, limit1(meth),
+                                                         limit1(x_t),   limit1(y_t),
+                                                         limit1(x_spd), limit1(y_spd),
+                                                         limit1(dead) )
   end
-  
+
   private
 
   def limit(value, max)
