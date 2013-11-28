@@ -41,14 +41,14 @@ class TestSphero < MiniTest::Unit::TestCase
   end
 
   def test_auto_reconnect=
-    @time_s = "10"
+    @time_s = 10
     Sphero::Request::SetAutoReconnect.expects(:new).with(@seq, @time_s)
     @sphero.expects(:write)
     @sphero.auto_reconnect = @time_s
   end
 
   def test_auto_reconnect
-    @time_s = "10"
+    @time_s = 10
     packet = mock 'packet'
     packet.stubs(:time).returns(@time_s)
  
@@ -84,6 +84,54 @@ class TestSphero < MiniTest::Unit::TestCase
     Sphero::Request::Roll.expects(:new).with(@seq, speed, heading, state)
     @sphero.expects(:write)
     @sphero.roll speed, heading, true
+  end
+
+  def test_roll_upper_limit
+    heading = 2
+    state = 1
+    Sphero::Request::Roll.expects(:new).with(@seq, 255, heading, state)
+    @sphero.expects(:write)
+    @sphero.roll 300, heading, true
+  end
+
+  def test_roll_lower_limit
+    heading = 2
+    state = 1
+    Sphero::Request::Roll.expects(:new).with(@seq, 0, heading, state)
+    @sphero.expects(:write)
+    @sphero.roll( -10, heading, true )
+  end
+
+  def test_roll_limit_conversion
+    heading = 2
+    state = 1
+    Sphero::Request::Roll.expects(:new).with(@seq, 123, heading, state)
+    @sphero.expects(:write)
+    @sphero.roll 123.4, heading, true
+  end
+
+  def test_roll_upper_wrap
+    speed = 3
+    state = 1
+    Sphero::Request::Roll.expects(:new).with(@seq, speed, 1, state)
+    @sphero.expects(:write)
+    @sphero.roll speed, 361, true
+  end
+
+  def test_roll_lower_wrap
+    speed = 3
+    state = 1
+    Sphero::Request::Roll.expects(:new).with(@seq, speed, 359, state)
+    @sphero.expects(:write)
+    @sphero.roll( speed, -1, true )
+  end
+
+  def test_roll_limit_wrap
+    speed = 3
+    state = 1
+    Sphero::Request::Roll.expects(:new).with(@seq, speed, 123, state)
+    @sphero.expects(:write)
+    @sphero.roll speed, 123.4, true
   end
 
   def test_stop

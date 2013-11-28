@@ -72,7 +72,7 @@ class Sphero
   end
 
   def auto_reconnect= time_s
-    write Request::SetAutoReconnect.new(@seq, time_s)
+    write Request::SetAutoReconnect.new(@seq, limit1(time_s) )
   end
 
   def auto_reconnect
@@ -80,7 +80,7 @@ class Sphero
   end
 
   def disable_auto_reconnect
-    write Request::SetAutoReconnect.new(@seq, 0, 0x00)
+    write Request::SetAutoReconnect.new(@seq, 0, bool(false) )
   end
 
   def power_state
@@ -88,11 +88,11 @@ class Sphero
   end
 
   def sphero_sleep wakeup = 0, macro = 0
-    write Request::Sleep.new(@seq, wakeup, macro)
+    write Request::Sleep.new(@seq, limit2(wakeup), limit1(macro) )
   end
 
   def roll speed, heading, state = true
-    write Request::Roll.new(@seq, speed, heading, state ? 0x01 : 0x00)
+    write Request::Roll.new(@seq, limit1(speed), degrees(heading), bool(state) )
   end
 
   def stop
@@ -100,7 +100,7 @@ class Sphero
   end
 
   def heading= h
-    write Request::Heading.new(@seq, h)
+    write Request::Heading.new(@seq, degrees(h) )
   end
 
   def color colorname, persistant = false
@@ -109,7 +109,7 @@ class Sphero
   end
 
   def rgb r, g, b, persistant = false
-    write Request::SetRGB.new(@seq, r, g, b, persistant ? 0x01 : 0x00)
+    write Request::SetRGB.new(@seq, limit1(r), limit1(g), limit1(b), bool(persistant) )
   end
 
   # This retrieves the "user LED color" which is stored in the config block
@@ -120,12 +120,12 @@ class Sphero
 
   # Brightness 0x00 - 0xFF
   def back_led_output= h
-    write Request::SetBackLEDOutput.new(@seq, h)
+    write Request::SetBackLEDOutput.new(@seq, limit1(h) )
   end
 
   # Rotation Rate 0x00 - 0xFF
   def rotation_rate= h
-    write Request::SetRotationRate.new(@seq, h)
+    write Request::SetRotationRate.new(@seq, limit1(h))
   end
 
   # just a nicer alias for Ruby's own sleep
@@ -137,12 +137,13 @@ class Sphero
 
   # configure power notification messages
   def set_power_notification enable=true
-    write Request::SetPowerNotification.new(@seq, enable ? 0x01 : 0x00)
+    write Request::SetPowerNotification.new(@seq, bool(enable) )
   end
 
   # configure data streaming notification messages
   def set_data_streaming n, m, mask, pcnt, mask2
-    write Request::SetDataStreaming.new(@seq, n, m, mask, pcnt, mask2)
+    write Request::SetDataStreaming.new(@seq, limit2(n), limit2(m),
+                                              limit4(mask), limit1(pcnt), limit4(mask2) )
   end
 
   # configure collision detection messages
@@ -151,7 +152,40 @@ class Sphero
   end
   
   private
-  
+
+  def limit(value, max)
+    return nil if value.nil?
+
+    value = value.to_i
+    if value < 0
+      0
+    elsif value > max
+      max
+    else
+      value
+    end
+  end
+
+  def wrap(value, max)
+    value && (value.to_i % max)
+  end
+
+  def degrees(value)
+    wrap value, 360
+  end
+
+  def limit1(value)
+    limit value, 0xFF
+  end
+
+  def limit2(value)
+    limit value, 0xFFFF
+  end
+
+  def bool(value)
+    value ? 0x01 : 0x00
+  end
+
   def is_windows?
     os = RUBY_PLATFORM.split("-")[1]
     if (os == 'mswin' or os == 'bccwin' or os == 'mingw' or os == 'mingw32')
