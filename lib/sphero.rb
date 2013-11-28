@@ -182,6 +182,10 @@ class Sphero
     limit value, 0xFFFF
   end
 
+  def limit2(value)
+    limit value, 0xFFFFFFFF
+  end
+
   def bool(value)
     value ? 0x01 : 0x00
   end
