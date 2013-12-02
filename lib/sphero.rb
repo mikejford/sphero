@@ -50,6 +50,7 @@ class Sphero
   end
   
   def close
+    return if @sp.nil? || @sp.closed?
     begin
       stop
     rescue Exception => e
@@ -80,7 +81,7 @@ class Sphero
   end
 
   def disable_auto_reconnect
-    write Request::SetAutoReconnect.new(@seq, 0, bool(false) )
+    write Request::SetAutoReconnect.new(@seq, 0, flag(false) )
   end
 
   def power_state
@@ -92,7 +93,7 @@ class Sphero
   end
 
   def roll speed, heading, state = true
-    write Request::Roll.new(@seq, limit1(speed), degrees(heading), bool(state) )
+    write Request::Roll.new(@seq, limit1(speed), degrees(heading), flag(state) )
   end
 
   def stop
@@ -109,7 +110,7 @@ class Sphero
   end
 
   def rgb r, g, b, persistant = false
-    write Request::SetRGB.new(@seq, limit1(r), limit1(g), limit1(b), bool(persistant) )
+    write Request::SetRGB.new(@seq, limit1(r), limit1(g), limit1(b), flag(persistant) )
   end
 
   # This retrieves the "user LED color" which is stored in the config block
@@ -137,7 +138,7 @@ class Sphero
 
   # configure power notification messages
   def set_power_notification enable=true
-    write Request::SetPowerNotification.new(@seq, bool(enable) )
+    write Request::SetPowerNotification.new(@seq, flag(enable) )
   end
 
   # configure data streaming notification messages
@@ -185,12 +186,19 @@ class Sphero
     limit value, 0xFFFF
   end
 
-  def limit2(value)
+  def limit4(value)
     limit value, 0xFFFFFFFF
   end
 
-  def bool(value)
-    value ? 0x01 : 0x00
+  def flag(value)
+    case value
+      when true
+        0x01
+      when false
+        0x00
+      else
+        value
+    end
   end
 
   def is_windows?
