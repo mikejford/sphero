@@ -77,6 +77,12 @@ class TestSphero < MiniTest::Unit::TestCase
     @sphero.sphero_sleep wakeup, macro
   end
 
+  def test_stabilization
+    Sphero::Request::Stabilization.expects(:new).with(@seq, true)
+    @sphero.expects(:write)
+    @sphero.stabilization = true
+  end
+
   def test_roll
     speed = 1
     heading = 2
