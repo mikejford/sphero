@@ -12,7 +12,7 @@ class Sphero
 
   DEFAULT_RETRIES = 3
 
-  attr_accessor :connection_types, :messages
+  attr_accessor :connection_types, :messages, :packets
 
   class << self
     def start(dev, &block)
@@ -47,6 +47,16 @@ class Sphero
     @seq  = 0x00
     @lock = Mutex.new
     @messages = Queue.new
+    @packets = []
+    Thread.new {
+      while true do
+        @packets.each do | packet |
+          write packet
+          @packets.delete(packet)
+        end
+        sleep 0.01
+      end
+    }
   end
   
   def close
@@ -61,39 +71,39 @@ class Sphero
   end
 
   def ping
-    write Request::Ping.new(@seq)
+    queue_packet Request::Ping.new(@seq)
   end
 
   def version
-    write Request::GetVersioning.new(@seq)
+    queue_packet Request::GetVersioning.new(@seq)
   end
 
   def bluetooth_info
-    write Request::GetBluetoothInfo.new(@seq)
+    queue_packet Request::GetBluetoothInfo.new(@seq)
   end
 
   def auto_reconnect= time_s
-    write Request::SetAutoReconnect.new(@seq, limit1(time_s) )
+    queue_packet Request::SetAutoReconnect.new(@seq, limit1(time_s) )
   end
 
   def auto_reconnect
-    write(Request::GetAutoReconnect.new(@seq)).time
+    queue_packet(Request::GetAutoReconnect.new(@seq)).time
   end
 
   def disable_auto_reconnect
-    write Request::SetAutoReconnect.new(@seq, 0, flag(false) )
+    queue_packet Request::SetAutoReconnect.new(@seq, 0, flag(false) )
   end
 
   def power_state
-    write Request::GetPowerState.new(@seq)
+    queue_packet Request::GetPowerState.new(@seq)
   end
 
   def sphero_sleep wakeup = 0, macro = 0
-    write Request::Sleep.new(@seq, limit2(wakeup), limit1(macro) )
+    queue_packet Request::Sleep.new(@seq, limit2(wakeup), limit1(macro) )
   end
 
   def roll speed, heading, state = true
-    write Request::Roll.new(@seq, limit1(speed), degrees(heading), flag(state) )
+    queue_packet Request::Roll.new(@seq, limit1(speed), degrees(heading), flag(state) )
   end
 
   def stop
@@ -101,7 +111,7 @@ class Sphero
   end
 
   def heading= h
-    write Request::Heading.new(@seq, degrees(h) )
+    queue_packet Request::Heading.new(@seq, degrees(h) )
   end
 
   def color colorname, persistant = false
@@ -110,23 +120,23 @@ class Sphero
   end
 
   def rgb r, g, b, persistant = false
-    write Request::SetRGB.new(@seq, limit1(r), limit1(g), limit1(b), flag(persistant) )
+    queue_packet Request::SetRGB.new(@seq, limit1(r), limit1(g), limit1(b), flag(persistant) )
   end
 
   # This retrieves the "user LED color" which is stored in the config block
   # (which may or may not be actively driven to the RGB LED).
   def user_led
-    write Request::GetRGB.new(@seq)
+    queue_packet Request::GetRGB.new(@seq)
   end
 
   # Brightness 0x00 - 0xFF
   def back_led_output= h
-    write Request::SetBackLEDOutput.new(@seq, limit1(h) )
+    queue_packet Request::SetBackLEDOutput.new(@seq, limit1(h) )
   end
 
   # Rotation Rate 0x00 - 0xFF
   def rotation_rate= h
-    write Request::SetRotationRate.new(@seq, limit1(h))
+    queue_packet Request::SetRotationRate.new(@seq, limit1(h))
   end
 
   # just a nicer alias for Ruby's own sleep
@@ -138,18 +148,18 @@ class Sphero
 
   # configure power notification messages
   def set_power_notification enable=true
-    write Request::SetPowerNotification.new(@seq, flag(enable) )
+    queue_packet Request::SetPowerNotification.new(@seq, flag(enable) )
   end
 
   # configure data streaming notification messages
   def set_data_streaming n, m, mask, pcnt, mask2
-    write Request::SetDataStreaming.new(@seq, limit2(n), limit2(m),
+    queue_packet Request::SetDataStreaming.new(@seq, limit2(n), limit2(m),
                                               limit4(mask), limit1(pcnt), limit4(mask2) )
   end
 
   # configure collision detection messages
   def configure_collision_detection meth, x_t, y_t, x_spd, y_spd, dead
-    write Request::ConfigureCollisionDetection.new(@seq, limit1(meth),
+    queue_packet Request::ConfigureCollisionDetection.new(@seq, limit1(meth),
                                                          limit1(x_t),   limit1(y_t),
                                                          limit1(x_spd), limit1(y_spd),
                                                          limit1(dead) )
@@ -222,20 +232,21 @@ class Sphero
     puts "Please 'gem install hybridgroup-serialport' for serial port support."
   end
 
+  def queue_packet packet
+    @packets << packet
+  end
+
   def write packet
     header, body = nil
 
     IO.select([], [@sp], [], 20)
-
     @lock.synchronize do
       @sp.write packet.to_str
       @seq += 1
     end
-
     IO.select([@sp], [], [], 20)
     header = read_header(true)
     body = read_body(header.last, true) if header
-
     # pick off asynch packets and store, till we get to the message response
     while header && Response.async?(header)
       messages << Response::AsyncResponse.response(header, body)
