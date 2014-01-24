@@ -12,7 +12,7 @@ class Sphero
 
   DEFAULT_RETRIES = 3
 
-  attr_accessor :connection_types, :messages, :packets
+  attr_accessor :connection_types, :messages, :packets, :responses_queue, :responses
 
   class << self
     def start(dev, &block)
@@ -47,14 +47,17 @@ class Sphero
     @seq  = 0x00
     @lock = Mutex.new
     @messages = Queue.new
-    @packets = []
+    @packets = Queue.new
+    @response_queue = Queue.new
+    @responses = []
     Thread.new {
       while true do
-        @packets.each do | packet |
-          write packet
-          @packets.delete(packet)
-        end
-        sleep 0.01
+        write @packets.pop
+      end
+    }
+    Thread.new {
+      while true do
+        @responses << @response_queue.pop
       end
     }
   end
@@ -71,15 +74,29 @@ class Sphero
   end
 
   def ping
-    queue_packet Request::Ping.new(@seq)
+    packet = Request::Ping.new(@seq)
+    queue_packet packet
+    return sync_response packet.seq
   end
 
   def version
-    queue_packet Request::GetVersioning.new(@seq)
+    packet = Request::GetVersioning.new(@seq)
+    queue_packet packet
+    return sync_response packet.seq
   end
 
   def bluetooth_info
-    queue_packet Request::GetBluetoothInfo.new(@seq)
+    packet = Request::GetBluetoothInfo.new(@seq)
+    queue_packet packet
+    return sync_response packet.seq
+  end
+
+  # This retrieves the "user LED color" which is stored in the config block
+  # (which may or may not be actively driven to the RGB LED).
+  def user_led
+    packet = Request::GetRGB.new(@seq)
+    queue_packet packet
+    return sync_response packet.seq
   end
 
   def auto_reconnect= time_s
@@ -123,11 +140,6 @@ class Sphero
     queue_packet Request::SetRGB.new(@seq, limit1(r), limit1(g), limit1(b), flag(persistant) )
   end
 
-  # This retrieves the "user LED color" which is stored in the config block
-  # (which may or may not be actively driven to the RGB LED).
-  def user_led
-    queue_packet Request::GetRGB.new(@seq)
-  end
 
   # Brightness 0x00 - 0xFF
   def back_led_output= h
@@ -166,6 +178,19 @@ class Sphero
   end
 
   private
+
+  def sync_response seq
+    100.times do
+      @responses.each do |response|
+        if response.seq == seq
+          @responses.delete(response)
+          return response
+        end
+      end
+      sleep 0.001
+    end
+    return nil
+  end
 
   def limit(value, max)
     return nil if value.nil?
@@ -220,6 +245,12 @@ class Sphero
     end
   end
 
+  #def seq
+  #  @seq += 1
+  #  puts @seq
+  #  return @seq
+  #end
+
   def initialize_serialport dev
     require 'serialport'
     @sp = SerialPort.new dev, 115200, 8, 1, SerialPort::NONE
@@ -239,19 +270,19 @@ class Sphero
   def write packet
     header, body = nil
 
-    IO.select([], [@sp], [], 20)
+    IO.select([], [@sp], [], 1)
     @lock.synchronize do
       @sp.write packet.to_str
       @seq += 1
     end
-    IO.select([@sp], [], [], 20)
+    IO.select([@sp], [], [], 1)
     header = read_header(true)
     body = read_body(header.last, true) if header
     # pick off asynch packets and store, till we get to the message response
     while header && Response.async?(header)
       messages << Response::AsyncResponse.response(header, body)
 
-      IO.select([@sp], [], [], 20)
+      IO.select([@sp], [], [], 1)
       header = read_header(true)
       if header
         body = read_body(header.last, true)
@@ -263,7 +294,7 @@ class Sphero
     response = packet.response header, body
 
     if response.success?
-      response
+      @response_queue << response
     else
       raise "Unable to write to Sphero!"
     end
