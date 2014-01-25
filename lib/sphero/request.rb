@@ -3,7 +3,7 @@ class Sphero
     SOP1 = 0xFF
     SOP2 = 0xFF
 
-    attr_reader :data
+    attr_reader :data, :seq
 
     def initialize seq, data = []
       @seq    = seq
