@@ -23,27 +23,33 @@ class TestSphero < MiniTest::Unit::TestCase
   end
 
   def test_ping
-    Sphero::Request::Ping.expects(:new).with(@seq)
-    @sphero.expects(:write)
+    packet = mock 'packet'
+    packet.stubs(:seq).returns(@seq)
+    Sphero::Request::Ping.expects(:new).with(@seq).returns(packet)
+    @sphero.expects(:queue_packet).returns(packet)
     @sphero.ping
   end
 
   def test_version
-    Sphero::Request::GetVersioning.expects(:new).with(@seq)
-    @sphero.expects(:write)
+    packet = mock 'packet'
+    packet.stubs(:seq).returns(@seq)
+    Sphero::Request::GetVersioning.expects(:new).with(@seq).returns(packet)
+    @sphero.expects(:queue_packet).returns(packet)
     @sphero.version
   end
 
   def test_bluetooth_info
-    Sphero::Request::GetBluetoothInfo.expects(:new).with(@seq)
-    @sphero.expects(:write)
+    packet = mock 'packet'
+    packet.stubs(:seq).returns(@seq)
+    Sphero::Request::GetBluetoothInfo.expects(:new).with(@seq).returns(packet)
+    @sphero.expects(:queue_packet).returns(packet)
     @sphero.bluetooth_info
   end
 
   def test_auto_reconnect=
     @time_s = 10
     Sphero::Request::SetAutoReconnect.expects(:new).with(@seq, @time_s)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.auto_reconnect = @time_s
   end
 
@@ -53,19 +59,19 @@ class TestSphero < MiniTest::Unit::TestCase
     packet.stubs(:time).returns(@time_s)
  
     Sphero::Request::GetAutoReconnect.expects(:new).with(@seq)
-    @sphero.expects(:write).returns(packet)
+    @sphero.expects(:queue_packet).returns(packet)
     assert_equal @sphero.auto_reconnect, @time_s
   end
 
   def test_disable_auto_reconnect
     Sphero::Request::SetAutoReconnect.expects(:new).with(@seq, 0, 0x00)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.disable_auto_reconnect
   end
 
   def test_power_state
     Sphero::Request::GetPowerState.expects(:new).with(@seq)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.power_state
   end
   
@@ -73,7 +79,7 @@ class TestSphero < MiniTest::Unit::TestCase
     wakeup = 1
     macro = 2
     Sphero::Request::Sleep.expects(:new).with(@seq, wakeup, macro)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.sphero_sleep wakeup, macro
   end
 
@@ -82,7 +88,7 @@ class TestSphero < MiniTest::Unit::TestCase
     heading = 2
     state = 1
     Sphero::Request::Roll.expects(:new).with(@seq, speed, heading, state)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.roll speed, heading, true
   end
 
@@ -90,7 +96,7 @@ class TestSphero < MiniTest::Unit::TestCase
     heading = 2
     state = 1
     Sphero::Request::Roll.expects(:new).with(@seq, 255, heading, state)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.roll 300, heading, true
   end
 
@@ -98,7 +104,7 @@ class TestSphero < MiniTest::Unit::TestCase
     heading = 2
     state = 1
     Sphero::Request::Roll.expects(:new).with(@seq, 0, heading, state)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.roll( -10, heading, true )
   end
 
@@ -106,7 +112,7 @@ class TestSphero < MiniTest::Unit::TestCase
     heading = 2
     state = 1
     Sphero::Request::Roll.expects(:new).with(@seq, 123, heading, state)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.roll 123.4, heading, true
   end
 
@@ -114,7 +120,7 @@ class TestSphero < MiniTest::Unit::TestCase
     speed = 3
     state = 1
     Sphero::Request::Roll.expects(:new).with(@seq, speed, 1, state)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.roll speed, 361, true
   end
 
@@ -122,7 +128,7 @@ class TestSphero < MiniTest::Unit::TestCase
     speed = 3
     state = 1
     Sphero::Request::Roll.expects(:new).with(@seq, speed, 359, state)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.roll( speed, -1, true )
   end
 
@@ -130,7 +136,7 @@ class TestSphero < MiniTest::Unit::TestCase
     speed = 3
     state = 1
     Sphero::Request::Roll.expects(:new).with(@seq, speed, 123, state)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.roll speed, 123.4, true
   end
 

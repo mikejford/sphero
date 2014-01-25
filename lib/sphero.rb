@@ -12,7 +12,7 @@ class Sphero
 
   DEFAULT_RETRIES = 3
 
-  attr_accessor :connection_types, :messages, :packets, :responses_queue, :responses
+  attr_accessor :connection_types, :messages, :packets, :response_queue, :responses
 
   class << self
     def start(dev, &block)
@@ -244,12 +244,6 @@ class Sphero
       false
     end
   end
-
-  #def seq
-  #  @seq += 1
-  #  puts @seq
-  #  return @seq
-  #end
 
   def initialize_serialport dev
     require 'serialport'
