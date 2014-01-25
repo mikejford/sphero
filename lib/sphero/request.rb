@@ -101,6 +101,18 @@ class Sphero
       end
     end
 
+    class Stabilization < Sphero
+      def initialize seq, on
+        super(seq, [on ? 1 : 0])
+        @cid = 0x02
+      end
+
+      private
+      def packet_body
+        @data.pack 'C'
+      end
+    end
+
     class Sleep < Request
       def initialize seq, wakeup, macro
         super(seq, [wakeup, macro])
