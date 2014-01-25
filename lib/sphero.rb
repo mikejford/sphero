@@ -131,6 +131,10 @@ class Sphero
     queue_packet Request::Heading.new(@seq, degrees(h) )
   end
 
+  def stabilization= on
+    write Request::Stabilization.new(@seq, on)
+  end
+
   def color colorname, persistant = false
     color = COLORS[colorname]
     rgb color[:r], color[:g], color[:b], persistant
