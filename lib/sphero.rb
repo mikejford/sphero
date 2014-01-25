@@ -51,12 +51,12 @@ class Sphero
     @response_queue = Queue.new
     @responses = []
     Thread.new {
-      while true do
+      loop do
         write @packets.pop
       end
     }
     Thread.new {
-      while true do
+      loop do
         @responses << @response_queue.pop
       end
     }
