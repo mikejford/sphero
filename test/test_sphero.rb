@@ -85,7 +85,7 @@ class TestSphero < MiniTest::Unit::TestCase
 
   def test_stabilization
     Sphero::Request::Stabilization.expects(:new).with(@seq, true)
-    @sphero.expects(:write)
+    @sphero.expects(:queue_packet)
     @sphero.stabilization = true
   end
 

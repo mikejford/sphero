@@ -132,7 +132,7 @@ class Sphero
   end
 
   def stabilization= on
-    write Request::Stabilization.new(@seq, on)
+    queue_packet Request::Stabilization.new(@seq, on)
   end
 
   def color colorname, persistant = false
