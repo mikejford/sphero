@@ -37,3 +37,9 @@
 * 1 enhancement
 
   * Add constants FORWARD, BACKWARD, RIGHT, & LEFT for quick directionality
+
+=== 1.5.0 / 2014-02-06
+
+* Many enhancements and bugfixes
+
+  * Been too long since our last changelog entry. Many bugfixes and enhancements.

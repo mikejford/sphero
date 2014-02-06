@@ -3,7 +3,7 @@ require 'sphero/response'
 require 'thread'
 
 class Sphero
-  VERSION = '1.4.1'
+  VERSION = '1.5.0'
 
   FORWARD = 0
   RIGHT = 90
