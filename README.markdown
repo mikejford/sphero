@@ -2,6 +2,8 @@
 
 * http://github.com/hybridgroup/sphero
 
+[![Build Status](https://travis-ci.org/hybridgroup/sphero.png?branch=master)](https://travis-ci.org/hybridgroup/sphero)
+
 ## DESCRIPTION:
 
 A ruby gem for controlling your Sphero ball.  Sends commands over the TTY
